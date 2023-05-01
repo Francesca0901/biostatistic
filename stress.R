@@ -3,7 +3,11 @@ layout(matrix(1:10, nrow = 2))
 
 summary(stressdata)
 
-argumentnames <- c("bhr", "basebp", "basedp", "pkhr", "sbp", "dp", "dose", "maxhr", "pctMphr", "mbp", "dpmaxdo", "dobdose", "age", "gender", "baseEF", "dobEF", "chestpain", "restwma", "posSE", "hxofHT", "hxofDM", "hxofCig", "hxofMI", "hxofPTCA", "hxofCABG", "ecg")
+# Bivariate analysis: Correlation matrix
+cor_matrix <- cor(stressdata[, sapply(stressdata, is.numeric)])
+print(cor_matrix)
+
+# argumentnames <- c("bhr", "basebp", "basedp", "pkhr", "sbp", "dp", "dose", "maxhr", "pctMphr", "mbp", "dpmaxdo", "dobdose", "age", "gender", "baseEF", "dobEF", "chestpain", "restwma", "posSE", "hxofHT", "hxofDM", "hxofCig", "hxofMI", "hxofPTCA", "hxofCABG", "ecg")
 
 # Univariable logistic regression for each predictor
 univariable_models <- lapply(argumentnames, function(predictor) {
@@ -39,7 +43,6 @@ print(significant_predictors)
 
 
 
-
 # Load the necessary library
 library(MASS)
 
@@ -49,6 +52,9 @@ significant_predictors <- c("dp", "dpmaxdo", "baseEF", "dobEF", "restwma", "posS
 # Perform multivariable logistic regression using significant predictors
 formula <- paste("any.event ~", paste(significant_predictors, collapse = " + "))
 multivariable_model <- glm(formula, data = stressdata, family = "binomial")
+
+# Print the summary of the multivariable model
+summary(multivariable_model)
 
 # Model selection using stepwise selection
 stepwise_model <- stepAIC(multivariable_model, direction = "both", trace = FALSE)
@@ -61,8 +67,7 @@ summary(stepwise_model)
 
 
 
-cor_matrix <- cor(stressdata[, sapply(stressdata, is.numeric)])
-print(cor_matrix)
+
 
 hist(stressdata$dp, main = "Age Distribution", xlab = "Age", col = "lightblue")
 boxplot(stressdata$dp, main = "Age Boxplot", ylab = "Age", col = "lightblue")
