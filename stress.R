@@ -142,6 +142,18 @@ plot(cooks_dist, type = "h", main = "Cook's Distance", xlab = "Observation", yla
 plot(std_resid, type = "h", main = "Standardized Residuals", xlab = "Observation", ylab = "Standardized Residuals")
 
 
+library(broom)
+# Extract model results
+model.data <- augment(stepwise_model_interactions) %>% 
+  mutate(index = 1:n()) 
+
+model.data %>% top_n(3, .cooksd)
+
+
+ggplot(model.data, aes(index, .std.resid)) + 
+  geom_point(aes(color = any.event), alpha = .5) +
+  geom_point(data = model.data %>% filter(abs(.std.resid) > 3), aes(color = "red", shape = "x"), size = 3) +
+  theme_bw()
 
 
 
