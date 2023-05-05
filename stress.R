@@ -157,8 +157,10 @@ ggplot(model.data, aes(index, .std.resid)) +
 
 
 
+car::vif(stepwise_model_interactions)
 
-avg_age <- mean(stressdata$dobEF)
+
+# avg_age <- mean(stressdata$dobEF)
 
 # calculate number and percentage of people above average age with any.event
 above_avg_age <- stressdata$dobEF > avg_age
