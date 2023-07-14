@@ -1,5 +1,13 @@
 stressdata <- read.csv("/home/cc/homework/biostat/stressEcho.csv")
-layout(matrix(1, nrow = 1))
+
+# Define categorical variable names
+categorical_variables <- c("chestpain", "restwma", "posSE", "hxofHT", "hxofDM", "hxofCig", "hxofMI", "hxofPTCA", "hxofCABG", "ecg")  # Replace with your actual variable names
+
+# Convert these variables to factors
+for (var in categorical_variables) {
+  stressdata[[var]] <- as.factor(stressdata[[var]])
+}
+
 
 summary(stressdata)
 
@@ -36,20 +44,81 @@ for (i in seq_along(argumentnames)) {
 # Filter data frame to get variables with p-value < 0.1
 significant_predictors <- p_values_df[p_values_df$p_value < 0.05, ]
 
+
+significant_predictors <- as.character(p_values_df[p_values_df$p_value < 0.05, "variable"])
+
 print(significant_predictors)
-
-
-
-
 
 
 # Load the necessary library
 library(MASS)
 
-stressdata$ecgMI <- as.integer(stressdata$ecg == "MI")
+stressdata$ecgMI <- as.factor(stressdata$ecg == "MI")
 
 # Define the significant predictor variables
 significant_predictors <- c("dp", "dpmaxdo", "baseEF", "dobEF", "restwma", "posSE", "hxofHT", "hxofDM", "hxofMI", "ecgMI")
+
+
+library(gridExtra)
+library(ggplot2)
+
+# create bar plots for factors and histograms for numeric data for univariate analysis:
+# Create a list to store the plots
+plot_list_univariate <- list()
+
+# Loop through each predictor and create a plot
+for(i in 1:length(significant_predictors)){
+  predictor <- significant_predictors[i]
+  # Check if the predictor is a factor
+  if(is.factor(stressdata[[predictor]]) || is.character(stressdata[[predictor]])) {
+    p <- ggplot(stressdata, aes_string(predictor)) +
+      geom_bar(fill = "black", color = "black") +
+      labs(title = paste("Bar Plot of", predictor), x = predictor, y = "Frequency") +
+      theme(plot.title = element_text( size = 8))
+  } else {
+    p <- ggplot(stressdata, aes_string(predictor)) +
+      geom_histogram(binwidth = 30, fill = "black", color = "black") +
+      labs(title = paste("Histogram of", predictor), x = predictor, y = "Frequency") +
+      theme(plot.title = element_text(size = 8))
+  }
+  # Add the plot to the list
+  plot_list_univariate[[i]] <- p
+}
+
+# Combine all plots into a single plot
+do.call(grid.arrange, c(plot_list_univariate, ncol = 5))
+
+
+# Select a dependent variable. I'll assume 'any.event' as per your previous code.
+dependent_var <- "any.event"
+
+# Create a list to store the plots
+plot_list_bivariate <- list()
+
+# Loop through each predictor
+for(i in 1:4){
+  predictor <- significant_predictors[i]
+  # Check if the predictor is a factor
+  if(is.factor(stressdata[[predictor]]) || is.character(stressdata[[predictor]])) {
+    p <- ggplot(stressdata, aes_string(x = predictor, fill = dependent_var)) +
+      geom_bar(position = "dodge", aes(group = dependent_var), fill = "black", color = "black")
+  } else {
+    # Create a jittered scatter plot
+    p <- ggplot(stressdata, aes_string(x = dependent_var, y = predictor)) +
+      geom_jitter(fill = "black", color = "black") +
+      labs(title = paste("Jittered scatter plot of", predictor, "by", dependent_var), x = dependent_var, y = predictor)
+  }
+  # Add the plot to the list
+  plot_list_bivariate[[i]] <- p
+}
+
+# Combine all plots into a single plot
+do.call(grid.arrange, c(plot_list_bivariate, ncol = 2))
+
+
+
+
+
 
 
 
